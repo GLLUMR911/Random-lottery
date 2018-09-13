@@ -1,0 +1,219 @@
+/*************************************************************************
+    > File Name: Vector.cpp
+    > Author: gl
+    > Mail: lzs123@911gll.cn
+    > Created Time: Wed 12 Sep 2018 07:05:12 PM CST
+ ************************************************************************/
+
+#ifndef _VECTOR_
+#define _VECTOR_
+
+#include <iostream>
+#include <cstring>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+
+template <typename T>
+class Vector
+{
+private:
+		T *buff;  
+		int len;  //当前长度
+		int cap;  //当前容量
+		
+		enum { INCREMENT_SIZE = 10 };
+
+public:
+		Vector()
+		{
+			len = 0;
+			cap = 100;
+			buff = new T[cap];
+		}
+		
+		~Vector()
+		{
+			delete []buff;
+			len = 0;
+			cap = 0;
+		}
+
+		void push_back(const T &data)  //尾插
+		{
+			if(len == cap)
+			{
+				//扩容
+				cap += INCREMENT_SIZE;
+				T *p = new T[cap];  
+				memcpy(p, buff, len * sizeof(T));
+				delete []buff;
+				buff = p;
+			}
+
+			buff[len++] = data;
+		}
+
+		void push_front(const T &data)  //头插
+		{
+			if(len == cap)
+			{
+				//扩容
+				cap += INCREMENT_SIZE;
+				T *p = new T[cap];  
+				memcpy(p, buff, len * sizeof(T));
+				delete []buff;
+				buff = p;
+			}
+
+			int i= 0;
+			for(i = len -1; i >= 0; --i)
+			{
+				buff[i + 1] = buff[i];
+			}
+
+			buff[0] = data;
+			++len;
+		}
+
+		void insert(int index, const T &data)  //中插
+		{
+			if(index < 0) index = 0;
+			if(index > len) index = len; 
+
+			if(len == cap)
+			{
+				//扩容
+				cap += INCREMENT_SIZE;
+				T *p = new T[cap];  
+				memcpy(p, buff, len * sizeof(T));
+				delete []buff;
+				buff = p;
+			}
+
+			buff[index] = data;
+			++len;
+		}
+
+		//清空
+		void clear(void)
+		{
+			len = 0;
+		}
+
+		bool remove(const T &data) //删除
+		{
+			if(cap > len * 3)
+			{
+				//减容
+				cap = len * 2;
+				T *p = new T[cap];  
+				memcpy(p, buff, len * sizeof(T));
+				delete []buff;
+				buff = p;
+			}
+
+			int i = 0;
+			for(i = 0; i < len; ++i)
+			{
+				if(buff[i] == data)
+				  break;
+			}
+			
+			if(i == len) return false;
+			
+			for(; i < len -  1; ++i)
+			  buff[i] = buff[i + 1];
+
+			--len;
+		}
+
+		T &operator[](int i) const  //随机访问
+		{
+			if(i < 0 || i >= len) throw 1;
+
+			return buff[i];
+		}
+
+		T &find(const T &data) const  //查值访问
+		{
+			int i;
+			for(i = 0; i < len; ++i)
+			{
+				if(buff[i] == data) return buff[i];
+			}
+
+			throw 2;
+		}
+
+		bool empty(void) const //判空
+		{
+			return !len;
+		}
+
+		int size(void) const //获取长度
+		{
+			return len;
+		}
+
+		//排序
+private:
+		void sort(T *buff, int len, bool(*cmp)(const T &a, const T &b))
+		{
+			int i = 0, j = len - 1;
+			T key;
+			key = buff[i];
+
+			if(len < 2) return;
+			
+			while(i != j)
+			{
+				while(i != j && cmp(buff[j], key)) j--;
+				buff[i] = buff[j];
+
+				while(i != j && cmp(key, buff[i])) i++;
+				buff[j] = buff[i];
+			}
+				
+			buff[i] = key;
+
+			sort(buff, i, cmp);
+			sort(buff + i + 1, len - i - 1, cmp);                     
+		}
+
+public:
+		void sort(bool(*cmp)(const T &a, const T &b))
+		{
+			sort(buff, len, cmp);		
+		}
+			
+		void reverse()  //逆序
+		{
+			int i = 0;
+			T tmp = 0;
+
+			for(i = 0; i < len / 2; ++i)
+			{
+				tmp = buff[i];
+				buff[i] = buff[len - i - 1];
+				buff[len - i - 1] = tmp;
+			}
+		}
+		
+		Vector operator+(const Vector &v)  //重载加号
+		{	
+			Vector tmp;
+			delete []tmp.buff;
+			tmp.cap = this -> size() + v.size();
+			tmp.len = tmp.cap;
+			tmp.buff = new T[size() + v.size()];
+
+			memcpy(tmp.buff, this -> buff, this -> len * sizeof(T));
+			memcpy(tmp.buff + this -> len, v.buff, v.len * sizeof(T));
+			
+			return  tmp;
+		}
+
+};
+
+#endif
